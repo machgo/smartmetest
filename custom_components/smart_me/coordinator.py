@@ -41,17 +41,32 @@ class SmartMeDataUpdateCoordinator(DataUpdateCoordinator[list[dict]]):
                     if response.status == 401:
                         raise ConfigEntryAuthFailed("Invalid credentials")
                     response.raise_for_status()
-                    data = await response.json()
+                    raw = await response.json()
+
+                    if not isinstance(raw, list):
+                        _LOGGER.error("Expected a list from API, got: %s", type(raw))
+                        return []
+
+                    # The API returns PascalCase keys; normalise to camelCase so
+                    # field names match the sensor descriptions (e.g. Id → id).
+                    data = [_to_camel_case(device) for device in raw]
+
+                    if data:
+                        _LOGGER.debug("Raw keys on first device: %s", list(raw[0].keys()))
+
                     _LOGGER.debug(
                         "API returned %d device(s): %s",
-                        len(data) if isinstance(data, list) else "N/A (not a list)",
+                        len(data),
                         [
                             {"id": d.get("id"), "name": d.get("name"), "serial": d.get("serial")}
                             for d in data
-                        ]
-                        if isinstance(data, list)
-                        else data,
+                        ],
                     )
                     return data
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Error communicating with smart-me API: {err}") from err
+
+
+def _to_camel_case(device: dict) -> dict:
+    """Lower-case the first character of every key (PascalCase → camelCase)."""
+    return {k[0].lower() + k[1:] if k else k: v for k, v in device.items()}
