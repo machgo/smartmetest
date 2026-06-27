@@ -1,5 +1,7 @@
 # Smart-me for Home Assistant
 
+![Smart-me logo](https://web.smart-me.com/wp-content/uploads/2023/07/smart-me_186×86.png)
+
 A custom integration that connects [Smart-me](https://smart-me.com) energy meters to Home Assistant. It automatically discovers all devices linked to your Smart-me account and exposes their real-time measurements as sensors, updated every 60 seconds.
 
 ## Features
