@@ -40,41 +40,44 @@ class SmartMeSensorEntityDescription(SensorEntityDescription):
 
 SENSOR_DESCRIPTIONS: tuple[SmartMeSensorEntityDescription, ...] = (
     # --- Energy / counter readings ---
+    # TOTAL (not TOTAL_INCREASING) because PV meters report negative net values.
     SmartMeSensorEntityDescription(
         key="counterReading",
         name="Energy",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         unit_key="counterReadingUnit",
     ),
     SmartMeSensorEntityDescription(
         key="counterReadingT1",
         name="Energy Tariff 1",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         unit_key="counterReadingUnit",
     ),
     SmartMeSensorEntityDescription(
         key="counterReadingT2",
         name="Energy Tariff 2",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         unit_key="counterReadingUnit",
     ),
     SmartMeSensorEntityDescription(
         key="counterReadingT3",
         name="Energy Tariff 3",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         unit_key="counterReadingUnit",
     ),
     SmartMeSensorEntityDescription(
         key="counterReadingT4",
         name="Energy Tariff 4",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         unit_key="counterReadingUnit",
     ),
+    # Import and export are always positive — safe to use TOTAL_INCREASING.
+    # These are the correct sensors to use in the HA Energy Dashboard.
     SmartMeSensorEntityDescription(
         key="counterReadingImport",
         name="Energy Import",
