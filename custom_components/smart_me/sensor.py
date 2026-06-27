@@ -36,6 +36,8 @@ class SmartMeSensorEntityDescription(SensorEntityDescription):
     unit_key: str | None = None
     # Optional transform applied to the raw API value
     value_fn: Callable[[float], float] | None = None
+    # Override the unique_id suffix when two descriptions share the same key
+    unique_id_suffix: str | None = None
 
 
 SENSOR_DESCRIPTIONS: tuple[SmartMeSensorEntityDescription, ...] = (
@@ -77,7 +79,7 @@ SENSOR_DESCRIPTIONS: tuple[SmartMeSensorEntityDescription, ...] = (
         unit_key="counterReadingUnit",
     ),
     # Import and export are always positive — safe to use TOTAL_INCREASING.
-    # These are the correct sensors to use in the HA Energy Dashboard.
+    # Use these sensors in the HA Energy Dashboard for grid consumption/return.
     SmartMeSensorEntityDescription(
         key="counterReadingImport",
         name="Energy Import",
@@ -91,6 +93,18 @@ SENSOR_DESCRIPTIONS: tuple[SmartMeSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         unit_key="counterReadingUnit",
+    ),
+    # Absolute value of counterReading — always positive even for PV meters
+    # that report a negative net counter. Use this sensor in the HA Energy
+    # Dashboard (e.g. as the solar production source).
+    SmartMeSensorEntityDescription(
+        key="counterReading",
+        name="Energy (Absolute)",
+        unique_id_suffix="solarProduction",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        unit_key="counterReadingUnit",
+        value_fn=abs,
     ),
     # --- Power ---
     SmartMeSensorEntityDescription(
@@ -275,7 +289,7 @@ class SmartMeSensorEntity(
         super().__init__(coordinator)
         self.entity_description: SmartMeSensorEntityDescription = description
         self._device_id = device_id
-        self._attr_unique_id = f"{device_id}_{description.key}"
+        self._attr_unique_id = f"{device_id}_{description.unique_id_suffix or description.key}"
 
     @property
     def _device_data(self) -> dict[str, Any]:
