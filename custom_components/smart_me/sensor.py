@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -25,6 +26,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, METER_ENERGY_TYPE_NAMES
 from .coordinator import SmartMeDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -232,12 +235,26 @@ async def async_setup_entry(
 ) -> None:
     coordinator: SmartMeDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities: list[SmartMeSensorEntity] = [
-        SmartMeSensorEntity(coordinator, device["id"], description)
-        for device in coordinator.data
-        for description in SENSOR_DESCRIPTIONS
-        if device.get(description.key) is not None
-    ]
+    _LOGGER.debug("Setting up sensors. Coordinator has %d device(s).", len(coordinator.data))
+
+    entities: list[SmartMeSensorEntity] = []
+    for device in coordinator.data:
+        device_id = device.get("id")
+        device_name = device.get("name") or device_id
+        available_keys = [k for k in device if device[k] is not None]
+        _LOGGER.debug(
+            "Device %r (id=%s): non-null keys = %s", device_name, device_id, available_keys
+        )
+        matched = []
+        for description in SENSOR_DESCRIPTIONS:
+            if device.get(description.key) is not None:
+                matched.append(description.key)
+                entities.append(SmartMeSensorEntity(coordinator, device_id, description))
+        _LOGGER.debug(
+            "Device %r: creating %d sensor(s): %s", device_name, len(matched), matched
+        )
+
+    _LOGGER.debug("Total sensor entities to register: %d", len(entities))
     async_add_entities(entities)
 
 
