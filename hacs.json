@@ -1,0 +1,7 @@
+{
+  "name": "Smart-me",
+  "domain": "smart_me",
+  "documentation": "https://api.smart-me.com",
+  "iot_class": "cloud_polling",
+  "homeassistant": "2023.3.0"
+}

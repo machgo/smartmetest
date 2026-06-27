@@ -1,0 +1,11 @@
+{
+  "domain": "smart_me",
+  "name": "Smart-me",
+  "version": "1.0.0",
+  "documentation": "https://api.smart-me.com",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [],
+  "iot_class": "cloud_polling",
+  "config_flow": true
+}
